@@ -120,13 +120,25 @@ lightMarkdown.toHtml = function (md) {
     }
 
     if (options.autoLink) {
+
         // Replace links
-        md = md.replace(regex.url, function (match, g1, g2) {
-            return g1 + '<a href="' + g2 + '" target="_blank">' + g2 + '</a>';
+        md = md.replace(regex.url, function (match, url) {
+            var linkWrapperOpen = '',
+                linkWrapperClose = '';
+
+            // Link can be wrapped by round brackets, an allowed character in an url
+            if (url.substring(0, 1) === '(') {
+                var lastCharacter = url.slice(-1);
+                linkWrapperOpen = '(';
+                url = url.slice(1, lastCharacter === ')' ? -1 : url.length);
+                linkWrapperClose = lastCharacter === ')' ? ')' : '';
+            }
+            return linkWrapperOpen + '<a href="' + url + '" target="_blank">' + url + '</a>' + linkWrapperClose;
         });
+
         // Replace emails
-        md = md.replace(regex.email, function (match, g1) {
-            return '<a href="mailto:' + g1 + '">' + g1 + '</a>';
+        md = md.replace(regex.email, function (match, email) {
+            return '<a href="mailto:' + email + '">' + email + '</a>';
         });
     }
 
@@ -215,8 +227,8 @@ function getRegex(tokens) {
     // Single line break
     var singleLineBreakRegex = /\r?\n\r?/g;
 
-    // From https://gist.github.com/dperini/729294
-    var urlRegex = /(^|\s)((?:(?:https?|ftp):\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,}))\.?)(?::\d{2,5})?(?:[/?#]\S*)?)/gi;
+    // Url
+    var urlRegex = /(\(?((https?:\/\/|ftp:\/\/).*?[a-z\u00a1-\uffff_\/0-9\-\#=._~:/?+,;=@()[\]&])(?=(\.|,|;|\?|\!)?("|'|«|»|\&gt\;|\<|>|\[|\s|\r|\n|$)))/gi;
 
     // Email
     var emailRegex = /((?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\]))/gi;
