@@ -124,10 +124,13 @@ lightMarkdown.toHtml = function (md) {
         md = md.replace(regex.url, function (match, g1, g2) {
             return g1 + '<a href="' + g2 + '" target="_blank">' + g2 + '</a>';
         });
-        // Replace emails
-        md = md.replace(regex.email, function (match, g1) {
-            return '<a href="mailto:' + g1 + '">' + g1 + '</a>';
-        });
+        // Some links, like Google maps, may contain @ characters and dots after it. This is a simple precaution.
+        if (md.indexOf('@') > -1 && !(md.match(/https?:\/\//gi))) {
+            // Replace emails
+            md = md.replace(regex.email, function(match, g1) {
+                return '<a href="mailto:' + g1 + '">' + g1 + '</a>';
+            });
+        }
     }
 
     if (options.paragraph) {
